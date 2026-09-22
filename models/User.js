@@ -5,7 +5,7 @@ const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, unique: true, sparse: true },
   phone: { type: String, unique: true, sparse: true },
-  password: { type: String, required: function () { return !this.googleId; } }, // Optional for Google accounts
+  password: { type: String, required: true }, // Optional for Google accounts
   googleId: { type: String, unique: true, sparse: true },
   about: { type: String, default: "Hey! there." }, 
   image: { type: String },
