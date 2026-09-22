@@ -165,43 +165,82 @@ router.get(
 router.post("/register", async (req, res) => {
   const { username, email, phone, password } = req.body;
 
-  // Ensure at least email or phone is provided
   if (!username || (!email && !phone) || !password) {
-    return res.status(400).json({ error: "Username, email/phone, and password are required." });
+    return res.status(400).json({
+      error: "Username, email/phone, and password are required.",
+    });
   }
 
   try {
-    // Check for existing user with the same email or phone
-    const existingUser = await User.findOne({
-      $or: [{ email }, { phone }],
+    const cleanUsername = username.trim();
+    const cleanEmail = email ? email.trim().toLowerCase() : null;
+    const cleanPhone = phone ? phone.trim() : null;
+
+    // Check username separately
+    const existingUsername = await User.findOne({
+      username: cleanUsername,
     });
 
-    if (existingUser) {
+    if (existingUsername) {
       return res.status(400).json({
-        error: email
-          ? "Email is already registered."
-          : "Phone number is already registered.",
+        error: "Username is already registered.",
       });
     }
 
-    // Create the user
+    // Check email only if email was provided
+    if (cleanEmail) {
+      const existingEmail = await User.findOne({
+        email: cleanEmail,
+      });
+
+      if (existingEmail) {
+        return res.status(400).json({
+          error: "Email is already registered.",
+        });
+      }
+    }
+
+    // Check phone only if phone was provided
+    if (cleanPhone) {
+      const existingPhone = await User.findOne({
+        phone: cleanPhone,
+      });
+
+      if (existingPhone) {
+        return res.status(400).json({
+          error: "Phone number is already registered.",
+        });
+      }
+    }
+
+    // Create user
     const user = await User.create({
-      username,
-      email: email || null, // Set email to null if not provided
-      phone: phone || null, // Set phone to null if not provided
+      username: cleanUsername,
+      email: cleanEmail,
+      phone: cleanPhone,
       password,
       about: "Hey! there.",
       status: "offline",
     });
 
-    res.status(201).json({ message: "User registered successfully", user });
+    res.status(201).json({
+      message: "User registered successfully",
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+      },
+    });
+
   } catch (error) {
     console.error("Error registering user:", error);
-    res.status(500).json({ error: "User registration failed" });
+
+    res.status(500).json({
+      error: "User registration failed",
+    });
   }
 });
-
-
 // Login
 router.post("/login", async (req, res) => {
   const { identifier, password } = req.body;
