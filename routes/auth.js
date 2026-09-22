@@ -204,24 +204,56 @@ router.post("/register", async (req, res) => {
 
 // Login
 router.post("/login", async (req, res) => {
-  const { identifier, password } = req.body; // Use 'identifier' instead of 'email'
+  const { identifier, password } = req.body;
 
   try {
-    // Find user by email or phone
     const user = await User.findOne({
       $or: [{ email: identifier }, { phone: identifier }],
     });
 
-    if (!user || !(await user.comparePassword(password))) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    if (!user) {
+      return res.status(401).json({
+        error: "Invalid credentials",
+      });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "1h" });
-    res.json({ token });
+    // User doesn't have a password
+    if (!user.password) {
+      return res.status(401).json({
+        error: "This account does not have a password. Please register again.",
+      });
+    }
+
+    const isMatch = await user.comparePassword(password);
+
+    if (!isMatch) {
+      return res.status(401).json({
+        error: "Invalid credentials",
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        username: user.username,
+        email: user.email,
+        phone: user.phone,
+      },
+    });
+
   } catch (error) {
     console.error("Error during login:", error);
-    res.status(500).json({ error: "Login failed" });
+
+    res.status(500).json({
+      error: "Login failed",
+    });
   }
 });
 router.post("/google-login", async (req, res) => {
