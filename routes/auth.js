@@ -214,14 +214,22 @@ router.post("/register", async (req, res) => {
     }
 
     // Create user
-    const user = await User.create({
-      username: cleanUsername,
-      email: cleanEmail,
-      phone: cleanPhone,
-      password,
-      about: "Hey! there.",
-      status: "offline",
-    });
+    const userData = {
+  username: cleanUsername,
+  password,
+  about: "Hey! there.",
+  status: "offline",
+};
+
+if (cleanEmail) {
+  userData.email = cleanEmail;
+}
+
+if (cleanPhone) {
+  userData.phone = cleanPhone;
+}
+
+const user = await User.create(userData);
 
     res.status(201).json({
       message: "User registered successfully",
