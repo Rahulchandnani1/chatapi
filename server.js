@@ -47,7 +47,8 @@ const receipechallengeRoutes = require("./routes/receipechallenge");
 app.use("/api/challenges", receipechallengeRoutes);
 const receipesubmitRoutes = require("./routes/receipesubmit");
 app.use("/api/receipesubmit", receipesubmitRoutes);
-
+const friendRoutes=require("./routes/friendRoutes");
+app.use("/api/friends", friendRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 5000;
