@@ -203,4 +203,22 @@ router.get("/:userId", async (req, res) => {
     });
   }
 });
+router.get("/sent/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const requests = await FriendRequest.find({
+      sender: userId,
+      status: "pending",
+    }).select("receiver");
+
+    res.json(requests);
+  } catch (error) {
+    console.error("Get sent friend requests error:", error);
+
+    res.status(500).json({
+      error: "Failed to get sent friend requests",
+    });
+  }
+});
 module.exports = router;
