@@ -15,6 +15,12 @@ const UserSchema = new mongoose.Schema({
       ref: "User",
     },
   ],
+  friends: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+],
   status: {
     type: String,
     enum: ["online", "offline"],
