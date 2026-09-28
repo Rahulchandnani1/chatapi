@@ -17,6 +17,12 @@ const messageSchema = new mongoose.Schema({
     },
   ],
   deleted: { type: Boolean, default: false },
+   deletedFor: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   pinned: { type: Boolean, default: false }, 
   timestamp: { type: Date, default: Date.now },
 });
