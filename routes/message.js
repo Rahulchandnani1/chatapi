@@ -258,11 +258,14 @@ router.post("/messages", async (req, res) => {
     res.status(500).json({ error: "Failed to send message" });
   }
 });
-router.delete("/clear-chat", async (req, res) => {
+
+      router.delete("/clear-chat", async (req, res) => {
   const { userId, recipientId, groupId } = req.body;
 
   if (!userId || (!recipientId && !groupId)) {
-    return res.status(400).json({ error: "UserId and recipientId or groupId are required." });
+    return res.status(400).json({
+      error: "UserId and recipientId or groupId are required.",
+    });
   }
 
   try {
@@ -275,15 +278,26 @@ router.delete("/clear-chat", async (req, res) => {
           ],
         };
 
-    const result = await Message.deleteMany(filter);
+    const result = await Message.updateMany(
+      filter,
+      {
+        $addToSet: {
+          deletedFor: userId,
+        },
+      }
+    );
 
     res.status(200).json({
       message: "Chat cleared successfully",
-      deletedCount: result.deletedCount,
+      modifiedCount: result.modifiedCount,
     });
+
   } catch (error) {
     console.error("Error clearing chat:", error);
-    res.status(500).json({ error: "Failed to clear chat" });
+
+    res.status(500).json({
+      error: "Failed to clear chat",
+    });
   }
 });
 router.delete("/chats", async (req, res) => {
