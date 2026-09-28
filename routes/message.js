@@ -355,7 +355,7 @@ router.delete('/delete-message/:id', async (req, res) => {
     }
 
     // Ensure only the sender can delete their message
-    if (message.sender.toString() !== senderId) {
+    if (message.sender.toString() !== senderId.toString()) {
       return res.status(403).json({ error: "You can only delete your own messages" });
     }
 
