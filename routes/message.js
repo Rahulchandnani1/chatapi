@@ -353,6 +353,13 @@ router.delete('/delete-message/:id', async (req, res) => {
     if (!message) {
       return res.status(404).json({ error: "Message not found" });
     }
+  console.log("Message ID:", id);
+    console.log("Message sender:", message.sender);
+    console.log("Request senderId:", senderId);
+    console.log(
+      "Comparison:",
+      message.sender?.toString() === senderId?.toString()
+    );
 
     // Ensure only the sender can delete their message
     if (message.sender.toString() !== senderId.toString()) {
