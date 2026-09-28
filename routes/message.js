@@ -326,6 +326,7 @@ router.delete("/chats", async (req, res) => {
 });
 
 // Get messages between two users
+
 router.get("/messages", async (req, res) => {
   const { userId1, userId2, groupId } = req.query;
 
@@ -334,25 +335,45 @@ router.get("/messages", async (req, res) => {
 
     if (groupId) {
       // Fetch group messages
-      messages = await Message.find({ group: groupId }).populate("sender").sort({ timestamp: 1 });
+      messages = await Message.find({
+        group: groupId,
+        deletedFor: { $ne: userId1 },
+      })
+        .populate("sender")
+        .sort({ timestamp: 1 });
+
     } else if (userId1 && userId2) {
       // Fetch user-to-user messages
       messages = await Message.find({
-        $or: [
-          { sender: userId1, recipient: userId2 },
-          { sender: userId2, recipient: userId1 },
+        $and: [
+          {
+            $or: [
+              { sender: userId1, recipient: userId2 },
+              { sender: userId2, recipient: userId1 },
+            ],
+          },
+          {
+            deletedFor: { $ne: userId1 },
+          },
         ],
       })
         .populate("sender")
         .sort({ timestamp: 1 });
+
     } else {
-      return res.status(400).json({ error: "Either userId1 and userId2 or groupId is required." });
+      return res.status(400).json({
+        error: "Either userId1 and userId2 or groupId is required.",
+      });
     }
 
     res.json(messages);
+
   } catch (error) {
     console.error("Error fetching messages:", error);
-    res.status(500).json({ error: "Failed to fetch messages" });
+
+    res.status(500).json({
+      error: "Failed to fetch messages",
+    });
   }
 });
 
